@@ -41,14 +41,14 @@ app.post("/generate", upload.single("file"), (req, res) => {
                 .update(req.file.buffer)
                 .digest("hex");
 
-        const secjs =
-`module.exports = "${hash}";`;
+        const Result =
+`"${hash}";`;
 
         res.json({
             success: true,
             filename: req.file.originalname,
             hash,
-            secjs
+            Result
         });
 
     } catch (err) {
