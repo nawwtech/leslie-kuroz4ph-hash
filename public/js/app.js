@@ -9,7 +9,7 @@ const CONFIG = {
 };
 
 /* ===================================
-   THEME SYSTEM
+   THEME SYSTEM - FIXED VERSION
    =================================== */
 
 const THEMES = {
@@ -75,50 +75,94 @@ const THEMES = {
     }
 };
 
+// ✅ FIX: Initialize theme immediately on page load
 function initializeTheme() {
+    console.log('🔧 Initializing theme system...');
+    
     const html = document.documentElement;
+    const savedMode = localStorage.getItem('theme') || 'dark';
+    const savedPreset = localStorage.getItem('themePreset') || 'default';
     
-    // Set mode (dark/light)
-    html.setAttribute('data-mode', CONFIG.currentTheme);
-    updateThemeIcon();
+    // ✅ SET DATA-MODE ON HTML ELEMENT
+    html.setAttribute('data-mode', savedMode);
+    console.log(`✅ Mode set to: ${savedMode}`);
     
-    // Set preset
-    document.getElementById('themePreset').value = CONFIG.currentThemePreset;
-    applyTheme(CONFIG.currentThemePreset);
+    // ✅ UPDATE ICON
+    updateThemeIcon(savedMode);
+    
+    // ✅ APPLY THEME COLORS
+    applyTheme(savedPreset);
+    
+    // ✅ SET DROPDOWN VALUE
+    const themeSelect = document.getElementById('themePreset');
+    if (themeSelect) {
+        themeSelect.value = savedPreset;
+        console.log(`✅ Preset set to: ${savedPreset}`);
+    }
 }
 
+// ✅ FIX: Toggle dark/light mode
 function toggleTheme() {
+    console.log('🔄 Toggle theme clicked');
+    
     const html = document.documentElement;
     const currentMode = html.getAttribute('data-mode') || 'dark';
     const newMode = currentMode === 'dark' ? 'light' : 'dark';
     
-    html.setAttribute('data-mode', newMode);
-    CONFIG.currentTheme = newMode;
-    localStorage.setItem('theme', newMode);
-    updateThemeIcon();
+    console.log(`Switching from ${currentMode} to ${newMode}`);
     
+    // ✅ CRITICAL: Set attribute on HTML element
+    html.setAttribute('data-mode', newMode);
+    
+    // ✅ Verify it was set
+    console.log(`Attribute verified: ${html.getAttribute('data-mode')}`);
+    
+    // ✅ Save to localStorage
+    localStorage.setItem('theme', newMode);
+    CONFIG.currentTheme = newMode;
+    
+    // ✅ Update icon
+    updateThemeIcon(newMode);
+    
+    // ✅ Add log
     addLog(`Switched to ${newMode} mode`, 'info');
     playSound(1200, 100);
 }
 
-function updateThemeIcon() {
+// ✅ FIX: Update theme icon
+function updateThemeIcon(mode = null) {
     const icon = document.getElementById('themeIcon');
-    const mode = document.documentElement.getAttribute('data-mode') || 'dark';
-    icon.textContent = mode === 'dark' ? '🌙' : '☀️';
+    if (!icon) {
+        console.warn('⚠️ Theme icon not found');
+        return;
+    }
+    
+    const currentMode = mode || document.documentElement.getAttribute('data-mode') || 'dark';
+    icon.textContent = currentMode === 'dark' ? '🌙' : '☀️';
+    console.log(`✅ Icon updated to: ${icon.textContent}`);
 }
 
+// ✅ FIX: Apply theme colors
 function applyTheme(themeName) {
+    console.log(`🎨 Applying theme: ${themeName}`);
+    
     const theme = THEMES[themeName] || THEMES.default;
     const root = document.documentElement;
     
+    // ✅ Apply all color variables
     Object.entries(theme.colors).forEach(([key, value]) => {
         root.style.setProperty(`--${key}-color`, value);
+        console.log(`  ✓ --${key}-color = ${value}`);
     });
     
     CONFIG.currentThemePreset = themeName;
     localStorage.setItem('themePreset', themeName);
+    
     addLog(`Theme changed to ${themeName}`, 'info');
     playSound(800, 150);
+    
+    // Particle effect
+    createParticles(window.innerWidth / 2, window.innerHeight / 2, 8);
 }
 
 /* ===================================
@@ -160,7 +204,9 @@ function toggleSound() {
     localStorage.setItem('soundEnabled', CONFIG.soundEnabled);
     
     const icon = document.getElementById('soundIcon');
-    icon.textContent = CONFIG.soundEnabled ? '🔊' : '🔇';
+    if (icon) {
+        icon.textContent = CONFIG.soundEnabled ? '🔊' : '🔇';
+    }
     
     addLog(`Sound ${CONFIG.soundEnabled ? 'enabled' : 'disabled'}`, 'info');
 }
@@ -195,6 +241,7 @@ function playSound(frequency = 800, duration = 150) {
 
 function createParticles(x, y, count = 8) {
     const container = document.getElementById('particlesContainer');
+    if (!container) return;
     
     for (let i = 0; i < count; i++) {
         const particle = document.createElement('div');
@@ -223,10 +270,11 @@ function createParticles(x, y, count = 8) {
 
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
+    if (!toast) return;
+    
     toast.textContent = message;
     toast.className = 'toast show';
     
-    // Reset styles
     toast.style.background = '';
     toast.style.color = '';
     
@@ -240,7 +288,6 @@ function showToast(message, type = 'success') {
     toast.style.background = colors[type] || colors.success;
     toast.style.color = type === 'warning' ? '#050810' : '#ffffff';
     
-    // Create particles on toast
     const rect = toast.getBoundingClientRect();
     createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 6);
     
@@ -257,6 +304,8 @@ function showToast(message, type = 'success') {
 
 function addLog(message, type = 'info') {
     const logsContainer = document.getElementById('logsContainer');
+    if (!logsContainer) return;
+    
     const timestamp = getCurrentTime();
     
     const logEntry = document.createElement('div');
@@ -269,7 +318,6 @@ function addLog(message, type = 'info') {
     logsContainer.appendChild(logEntry);
     logsContainer.scrollTop = logsContainer.scrollHeight;
     
-    // Particle effect on new log
     if (type === 'success') {
         createParticles(window.innerWidth * 0.75, window.innerHeight * 0.5, 4);
     }
@@ -277,12 +325,14 @@ function addLog(message, type = 'info') {
 
 function clearLogs() {
     const logsContainer = document.getElementById('logsContainer');
-    logsContainer.innerHTML = `
-        <div class="log-entry log-info">
-            <span class="timestamp">[${getCurrentTime()}]</span>
-            <span class="log-text">System initialized. Ready for file upload.</span>
-        </div>
-    `;
+    if (logsContainer) {
+        logsContainer.innerHTML = `
+            <div class="log-entry log-info">
+                <span class="timestamp">[${getCurrentTime()}]</span>
+                <span class="log-text">System initialized. Ready for file upload.</span>
+            </div>
+        `;
+    }
 }
 
 /* ===================================
@@ -290,12 +340,14 @@ function clearLogs() {
    =================================== */
 
 function showLoading() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'flex';
     playSound(1000, 80);
 }
 
 function hideLoading() {
-    document.getElementById('loadingOverlay').style.display = 'none';
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
     playSound(1400, 100);
 }
 
@@ -309,50 +361,53 @@ const fileInfo = document.getElementById('fileInfo');
 
 let selectedFile = null;
 
-// Click to select file
-dropZone.addEventListener('click', () => {
-    fileInput.click();
-    createParticles(event.clientX, event.clientY, 6);
-});
+if (dropZone) {
+    dropZone.addEventListener('click', () => {
+        if (fileInput) {
+            fileInput.click();
+            createParticles(window.innerWidth / 2, window.innerHeight / 3, 6);
+        }
+    });
+}
 
-// File input change
-fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) {
-        handleFileSelect(fileInput.files[0]);
-    }
-});
+if (fileInput) {
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+}
 
-// Drag over
-dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('drag-over');
-    dropZone.style.borderColor = '#0099ff';
-    dropZone.style.boxShadow = 'inset 0 0 30px rgba(0, 217, 255, 0.15)';
-    playSound(1100, 50);
-});
+if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+        dropZone.style.borderColor = '#0099ff';
+        dropZone.style.boxShadow = 'inset 0 0 30px rgba(0, 217, 255, 0.15)';
+        playSound(1100, 50);
+    });
 
-dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('drag-over');
-    dropZone.style.borderColor = '';
-    dropZone.style.boxShadow = '';
-});
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+        dropZone.style.borderColor = '';
+        dropZone.style.boxShadow = '';
+    });
 
-// Drop
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    dropZone.style.borderColor = '';
-    dropZone.style.boxShadow = '';
-    
-    const files = e.dataTransfer.files;
-    if (files[0]) {
-        handleFileSelect(files[0]);
-        createParticles(e.clientX, e.clientY, 12);
-    }
-});
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        dropZone.style.borderColor = '';
+        dropZone.style.boxShadow = '';
+        
+        const files = e.dataTransfer.files;
+        if (files[0]) {
+            handleFileSelect(files[0]);
+            createParticles(e.clientX, e.clientY, 12);
+        }
+    });
+}
 
 function handleFileSelect(file) {
-    // Validate file type
     if (!file.name.endsWith('.js')) {
         showToast('Please upload a .js file', 'error');
         addLog('Invalid file type: ' + file.name, 'error');
@@ -362,31 +417,28 @@ function handleFileSelect(file) {
 
     selectedFile = file;
     
-    // Update metadata display
     document.getElementById('fileName').textContent = file.name;
     document.getElementById('fileSize').textContent = formatBytes(file.size);
     document.getElementById('fileDate').textContent = formatDate(new Date(file.lastModified));
     
-    fileInfo.style.display = 'block';
-    dropZone.style.display = 'none';
+    if (fileInfo) fileInfo.style.display = 'block';
+    if (dropZone) dropZone.style.display = 'none';
     
     addLog(`File selected: ${file.name} (${formatBytes(file.size)})`, 'info');
     showToast(`File selected: ${file.name}`, 'success');
     
-    // Particle effect
     createParticles(window.innerWidth / 2, window.innerHeight / 3, 10);
 }
 
 function clearFile() {
     selectedFile = null;
-    fileInput.value = '';
-    fileInfo.style.display = 'none';
-    dropZone.style.display = 'block';
+    if (fileInput) fileInput.value = '';
+    if (fileInfo) fileInfo.style.display = 'none';
+    if (dropZone) dropZone.style.display = 'block';
     
     addLog('File selection cleared', 'info');
     showToast('File selection cleared', 'info');
     
-    // Particle effect
     createParticles(window.innerWidth / 2, window.innerHeight / 3, 8);
 }
 
@@ -432,16 +484,14 @@ async function generateHash() {
 
         addLog('Hash generated successfully', 'success');
         
-        // Display result
         const resultBox = document.getElementById('resultBox');
         const terminalEmpty = document.getElementById('terminalEmpty');
         const result = document.getElementById('result');
         
-        result.textContent = data.secjs;
-        resultBox.style.display = 'block';
-        terminalEmpty.style.display = 'none';
+        if (result) result.textContent = data.secjs;
+        if (resultBox) resultBox.style.display = 'block';
+        if (terminalEmpty) terminalEmpty.style.display = 'none';
 
-        // Update counters with animation
         hashCounter++;
         filesProcessed++;
         animateCounter('hashCount', hashCounter);
@@ -452,7 +502,6 @@ async function generateHash() {
         hideLoading();
         showToast('Hash generated successfully! Ready to copy.', 'success');
         
-        // Particle celebration
         createParticles(window.innerWidth / 2, window.innerHeight / 2, 20);
         playSound(1500, 150);
         
@@ -467,7 +516,9 @@ async function generateHash() {
 
 function animateCounter(id, value) {
     const element = document.getElementById(id);
-    const currentValue = parseInt(element.textContent);
+    if (!element) return;
+    
+    const currentValue = parseInt(element.textContent) || 0;
     const step = (value - currentValue) / 10;
     let current = currentValue;
     
@@ -487,7 +538,14 @@ function animateCounter(id, value) {
    =================================== */
 
 async function copyResult() {
-    const text = document.getElementById('result').textContent;
+    const result = document.getElementById('result');
+    if (!result) {
+        showToast('No content to copy', 'error');
+        playSound(400, 200);
+        return;
+    }
+    
+    const text = result.textContent;
     
     if (!text) {
         showToast('No content to copy', 'error');
@@ -499,26 +557,26 @@ async function copyResult() {
         await navigator.clipboard.writeText(text);
         
         const copyBtn = document.getElementById('copyBtn');
-        const originalHTML = copyBtn.innerHTML;
-        
-        // Animate button
-        copyBtn.innerHTML = '<span class="copy-icon">✓</span><span class="copy-text">Copied!</span>';
-        copyBtn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.4), rgba(0, 217, 255, 0.2))';
-        copyBtn.style.borderColor = '#00ff88';
-        
-        addLog('Content copied to clipboard', 'success');
-        showToast('Copied to clipboard!', 'success');
-        
-        // Particle effect on button
-        const rect = copyBtn.getBoundingClientRect();
-        createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 12);
-        playSound(1200, 100);
-        
-        setTimeout(() => {
-            copyBtn.innerHTML = originalHTML;
-            copyBtn.style.background = '';
-            copyBtn.style.borderColor = '';
-        }, 2000);
+        if (copyBtn) {
+            const originalHTML = copyBtn.innerHTML;
+            
+            copyBtn.innerHTML = '<span class="copy-icon">✓</span><span class="copy-text">Copied!</span>';
+            copyBtn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.4), rgba(0, 217, 255, 0.2))';
+            copyBtn.style.borderColor = '#00ff88';
+            
+            addLog('Content copied to clipboard', 'success');
+            showToast('Copied to clipboard!', 'success');
+            
+            const rect = copyBtn.getBoundingClientRect();
+            createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 12);
+            playSound(1200, 100);
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.style.background = '';
+                copyBtn.style.borderColor = '';
+            }, 2000);
+        }
         
     } catch (error) {
         console.error('Copy failed:', error);
@@ -540,9 +598,7 @@ function observeScrollAnimation() {
                 observer.unobserve(entry.target);
             }
         });
-    }, {
-        threshold: 0.1
-    });
+    }, { threshold: 0.1 });
 
     document.querySelectorAll('.reveal-on-scroll').forEach(el => {
         observer.observe(el);
@@ -553,24 +609,43 @@ function observeScrollAnimation() {
    INITIALIZATION
    =================================== */
 
+// ✅ CRITICAL: Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize theme
+    console.log('🚀 Initializing app...');
+    
+    // Initialize theme FIRST
     initializeTheme();
     
     // Setup theme switcher
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    document.getElementById('themePreset').addEventListener('change', (e) => {
-        applyTheme(e.target.value);
-    });
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        console.log('✅ Theme toggle setup');
+    }
+    
+    const themePreset = document.getElementById('themePreset');
+    if (themePreset) {
+        themePreset.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+        console.log('✅ Theme preset setup');
+    }
     
     // Setup sound toggle
-    document.getElementById('soundToggle').addEventListener('click', toggleSound);
-    document.getElementById('soundIcon').textContent = CONFIG.soundEnabled ? '🔊' : '🔇';
+    const soundToggle = document.getElementById('soundToggle');
+    if (soundToggle) {
+        soundToggle.addEventListener('click', toggleSound);
+        const soundIcon = document.getElementById('soundIcon');
+        if (soundIcon) {
+            soundIcon.textContent = CONFIG.soundEnabled ? '🔊' : '🔇';
+        }
+        console.log('✅ Sound toggle setup');
+    }
     
     // Setup scroll animations
     observeScrollAnimation();
     
-    // Global particle effect on any click
+    // Global particle effect
     document.addEventListener('click', (e) => {
         if (!e.target.closest('button') && !e.target.closest('select')) {
             createParticles(e.clientX, e.clientY, 3);
@@ -580,6 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addLog('System initialized successfully', 'success');
     addLog('Ready to process JavaScript files', 'info');
     playSound(1000, 150);
+    
+    console.log('✅ Initialization complete!');
 });
 
 /* ===================================
