@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Hash Generator Pro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Animated blobs background -->
+    <div class="blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Grid background -->
+    <div class="grid-background"></div>
+
+    <!-- Main container -->
+    <div class="main-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">⚡</div>
+                    <div>
+                        <h1>Hash Generator Pro</h1>
+                        <p>Advanced JavaScript Hash Generation</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content wrapper -->
+        <div class="content-wrapper">
+            <!-- Left section - Upload -->
+            <div class="upload-section">
+                <div class="glass-card upload-card">
+                    <div class="card-header">
+                        <h2>Upload File</h2>
+                        <span class="badge">Step 1</span>
+                    </div>
+
+                    <!-- Drop zone -->
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-content">
+                            <div class="drop-icon">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <path d="M24 4V32M4 24H44M24 32L14 22M24 32L34 22" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <defs>
+                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#0099ff;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                            <h3>Drop your .js file here</h3>
+                            <p>or click to select file</p>
+                        </div>
+                        <input type="file" id="fileInput" accept=".js" hidden>
+                    </div>
+
+                    <!-- Selected file info -->
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <div class="file-metadata">
+                            <div class="metadata-item">
+                                <span class="label">File Name:</span>
+                                <span class="value" id="fileName">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="label">File Size:</span>
+                                <span class="value" id="fileSize">-</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="label">Last Modified:</span>
+                                <span class="value" id="fileDate">-</span>
+                            </div>
+                        </div>
+                        <button class="btn-clear" onclick="clearFile()">Clear Selection</button>
+                    </div>
+
+                    <!-- Generate button -->
+                    <button class="btn-generate" id="generateBtn" onclick="generateHash()">
+                        <span class="btn-text">Generate Hash</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="glass-card stats-card">
+                    <div class="stat-item">
+                        <div class="stat-value" id="hashCount">0</div>
+                        <div class="stat-label">Hashes Generated</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="filesProcessed">0</div>
+                        <div class="stat-label">Files Processed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right section - Output -->
+            <div class="output-section">
+                <!-- Progress logs -->
+                <div class="glass-card logs-card">
+                    <div class="card-header">
+                        <h2>Process Logs</h2>
+                        <div class="live-indicator" id="liveIndicator">
+                            <span class="pulse"></span>
+                            Ready
+                        </div>
+                    </div>
+                    <div class="logs-container" id="logsContainer">
+                        <div class="log-entry log-info">
+                            <span class="timestamp">[00:00:00]</span>
+                            <span class="log-text">System initialized. Ready for file upload.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terminal window -->
+                <div class="glass-card terminal-card">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <div class="btn-circle red"></div>
+                            <div class="btn-circle yellow"></div>
+                            <div class="btn-circle green"></div>
+                        </div>
+                        <span class="terminal-title">sec.js</span>
+                    </div>
+                    <div class="terminal-content" id="resultBox" style="display: none;">
+                        <pre id="result" class="terminal-text"></pre>
+                        <button class="btn-copy" id="copyBtn" onclick="copyResult()">
+                            <span class="copy-icon">📋</span>
+                            <span class="copy-text">Copy to Clipboard</span>
+                        </button>
+                    </div>
+                    <div class="terminal-empty" id="terminalEmpty">
+                        <div class="empty-state">
+                            <div class="empty-icon">⚙️</div>
+                            <p>No output yet. Generate a hash to see results.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading animation -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loader">
+                <div class="loader-circle"></div>
+                <div class="loader-text">Processing...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
