@@ -488,7 +488,7 @@ async function generateHash() {
         const terminalEmpty = document.getElementById('terminalEmpty');
         const result = document.getElementById('result');
         
-        if (result) result.textContent = data.secjs;
+        if (result) result.textContent = data.Result;
         if (resultBox) resultBox.style.display = 'block';
         if (terminalEmpty) terminalEmpty.style.display = 'none';
 
@@ -497,7 +497,7 @@ async function generateHash() {
         animateCounter('hashCount', hashCounter);
         animateCounter('filesProcessed', filesProcessed);
 
-        addLog(`Result ready for copy (${data.secjs.length} characters)`, 'success');
+        addLog(`Result ready for copy (${data.Result.length} characters)`, 'success');
         
         hideLoading();
         showToast('Hash generated successfully! Ready to copy.', 'success');
